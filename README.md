@@ -2,22 +2,16 @@ ClojureVerbalExpressions
 =======================
 
 ## Installation
-Add `[clojureverbalexpressions "0.2.1"]` too your project.clj file.
+Add [![Clojars Project](https://img.shields.io/clojars/v/verbal-expressions.svg)](https://clojars.org/verbal-expressions) too your project.clj file.
 
 ## Usage
-```clojure
-user=> (require '[clojureverbalexpressions :as verex])
-nil
-user=> (def verbal verex/VerEx)
-#'user/verbal
-```
-## Examples
 
-### Testing if we have a valid URL
 ```clojure
+(require '[verbal-expressions.core :as verex])
+
 ;; Create an example of how to test for correctly formed URLs
 
-(def tester  (-> VerEx 
+(def tester  (-> verex/VerEx
                  (start-of-line)
                  (find "http")
                  (maybe "s")
@@ -37,6 +31,25 @@ user=> (def verbal verex/VerEx)
 (println (source tester)) 
 ;; => ^(http)(s)?(\:\/\/)(www\.)?([^\ ]*)$
 ```
+
+Alternatively, it's possible to use a declarative syntax to build the regex:
+
+```clojure
+;; compile regex
+(def tester (verex/compile
+              [[:start-of-line]
+               [:find "http"]
+               [:maybe "s"]
+               [:find "://"]
+               [:maybe "www."]
+               [:anything-but " "]
+               [:end-of-line]]))
+
+;; Test if the URL is valid
+(if (match tester test-url)
+  (println "Valid URL"))
+```
+
 ### Replacing strings
 ```clojure
 ;; Create a test string
@@ -55,3 +68,5 @@ user=> (def verbal verex/VerEx)
 (def result (replace (find VerEx "red") "We have a red house" "blue"))
 (println result)
 ```
+## Other implementations  
+You can view all implementations on [VerbalExpressions.github.io](http://VerbalExpressions.github.io)

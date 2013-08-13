@@ -1,6 +1,8 @@
-(ns clojureverbalexpressions.core
-  (:require [clojure.string :as s])
-  (:refer-clojure :exclude [find replace range or]))
+(ns verbal-expressions.core
+  (:refer-clojure :exclude [compile find replace range or])
+  (:require
+   [clojure.string :as s]
+   [clojure.walk :refer [postwalk]]))
 
 (defrecord VerbalExpression [source modifier prefix suffix pattern])
 
@@ -118,3 +120,73 @@
 (defn end-capture [{suffix :suffix :as v}]
   (-> (assoc v :suffix (subs suffix 0 (dec (count suffix))))
       (add ")")))
+
+(defmulti apply-tag (fn [_ [tag]] tag))
+
+(defmethod apply-tag :maybe [regex [_ & args]]
+  (apply maybe regex args))
+(defmethod apply-tag :anything [regex [_ & args]]
+  (apply anything regex args))
+(defmethod apply-tag :anything-but [regex [_ & args]]  
+  (apply anything-but regex args))
+(defmethod apply-tag :something [regex [_ & args]]  
+  (apply something regex args))
+(defmethod apply-tag :something-but [regex [_ & args]]  
+  (apply something-but regex args))
+(defmethod apply-tag :start-of-line [regex [_ & args]]  
+  (apply start-of-line regex args))
+(defmethod apply-tag :end-of-line [regex [_ & args]]
+  (apply end-of-line regex args))
+(defmethod apply-tag :search-one-line [regex [_ & args]]
+  (apply search-one-line regex args))
+(defmethod apply-tag :begin-capture [regex [_ & args]]
+  (apply begin-capture regex args))
+(defmethod apply-tag :end-capture [regex [_ & args]]
+  (apply end-capture regex args))
+(defmethod apply-tag :with-any-case [regex [_ & args]]
+  (apply with-any-case regex args))
+(defmethod apply-tag :multiple [regex [_ & args]]
+  (apply multiple regex args))
+(defmethod apply-tag :remove-modifier [regex [_ & args]]
+  (apply remove-modifier regex args))
+(defmethod apply-tag :add-modifier [regex [_ & args]]
+  (apply add-modifier regex args))
+(defmethod apply-tag :add [regex [_ & args]]
+  (apply add regex args))
+(defmethod apply-tag :or [regex [_ & args]]
+  (apply or regex args))
+(defmethod apply-tag :word [regex [_ & args]]
+  (apply word regex args))
+(defmethod apply-tag :tab [regex [_ & args]]
+  (apply tab regex args))
+(defmethod apply-tag :range [regex [_ & args]]
+  (apply range regex args))
+(defmethod apply-tag :br [regex [_ & args]]
+  (apply br regex args))
+(defmethod apply-tag :line-break [regex [_ & args]]
+  (apply line-break regex args))
+(defmethod apply-tag :any-of [regex [_ & args]]
+  (apply any-of regex args))
+(defmethod apply-tag :any [regex [_ & args]]
+  (apply any regex args))
+(defmethod apply-tag :then [regex [_ & args]]
+  (apply then regex args))
+(defmethod apply-tag :find [regex [_ & args]]
+  (apply find regex args))
+(defmethod apply-tag :match [regex [_ & args]]
+  (apply match regex args))
+(defmethod apply-tag :source [regex [_ & args]]  
+  (apply source regex args))
+(defmethod apply-tag :default [_ [tag & args]]
+  (throw (ex-info (str "unrecognized expression: " tag) {:tag tag :args args})))
+
+(defn compile
+  ([expressions]
+   (compile VerEx expressions))
+  ([exp expressions]
+   (reduce
+    (fn [regex exp]
+      (apply-tag regex exp))
+    exp
+    expressions)))
+

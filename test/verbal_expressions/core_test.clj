@@ -1,6 +1,7 @@
-(ns clojureverbalexpressions.core-test
-  (:use midje.sweet)
-  (:require [clojureverbalexpressions.core :as verex]))
+(ns verbal-expressions.core-test
+  (:require
+   [midje.sweet :refer :all]
+   [verbal-expressions.core :as verex]))
 
 (fact "verex renders as strings"
       (def v (-> verex/VerEx (verex/add "^$")))
@@ -117,4 +118,13 @@
       (def v (-> verex/VerEx (verex/start-of-line) (verex/then "http") (verex/maybe "s") (verex/then "://") (verex/maybe "www.") (verex/word) (verex/then ".") (verex/word) (verex/maybe "/") (verex/end-of-line)))
       (verex/match v "https://google.com") => true)
 
-
+(fact "compile regex"
+      (def regex (verex/compile
+                  [[:start-of-line]
+                   [:find "http"]
+                   [:maybe "s"]
+                   [:find "://"]
+                   [:maybe "www."]
+                   [:anything-but " "]
+                   [:end-of-line]]))
+      (verex/match regex "https://www.google.com") => true)
