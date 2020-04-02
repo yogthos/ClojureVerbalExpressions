@@ -1,4 +1,4 @@
-(defproject yogthos/verbal-expressions "0.2.2"
+(defproject verbal-expressions "0.2.2"
   :description "Port of the Verbal Expressions lib for Clojure"
   :url "https://github.com/yogthos/ClojureVerbalExpressions"
   :license {:name "Eclipse Public License"
